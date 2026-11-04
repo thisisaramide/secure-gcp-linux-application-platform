@@ -1,0 +1,48 @@
+---
+- name: Configure the Linux foundation
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    app_user: appoperator
+    app_directory: /opt/raitbyne-inventory
+
+  tasks:
+    - name: Update the APT package cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      ansible.builtin.apt:
+        name:
+          - nginx
+          - unattended-upgrades
+        state: present
+
+    - name: Ensure Nginx is enabled and running
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Ensure the application user exists
+      ansible.builtin.user:
+        name: "{{ app_user }}"
+        state: present
+        create_home: true
+
+    - name: Ensure the application directory exists
+      ansible.builtin.file:
+        path: "{{ app_directory }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: "0750"
+
+    - name: Ensure automatic updates are scheduled
+      ansible.builtin.systemd:
+        name: apt-daily-upgrade.timer
+        state: started
+        enabled: true
