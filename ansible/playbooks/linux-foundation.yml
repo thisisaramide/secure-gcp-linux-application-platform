@@ -47,8 +47,7 @@
         state: started
         enabled: true
 
-    
-     - name: Deploy the health-check script
+    - name: Deploy the health-check script
       ansible.builtin.copy:
         src: ../files/health-check
         dest: /usr/local/bin/health-check
