@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+echo "=== Patch report: $(date) ==="
+
+updates=$(apt list --upgradable 2>/dev/null | sed 1d)
+
+if [ -z "$updates" ]; then
+  echo "No package updates are currently available."
+else
+  echo "Available updates:"
+  echo "$updates"
+fi
+
+echo
+echo "Automatic updates service:"
+systemctl is-enabled unattended-upgrades
