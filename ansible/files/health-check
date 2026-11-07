@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+echo "=== Health check: $(date) ==="
+
+echo
+echo "-- Nginx status --"
+systemctl is-active nginx || true
+
+echo
+echo "-- Disk usage --"
+df -h /
+
+echo
+echo "-- Memory usage --"
+free -h
+
+echo
+echo "-- Local web-server test --"
+curl -sS -o /dev/null -w "HTTP %{http_code}\n" http://localhost || true
+
+echo
+echo "-- Failed services --"
+systemctl --failed --no-legend || true
