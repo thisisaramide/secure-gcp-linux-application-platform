@@ -6,14 +6,25 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
+DB_HOST = os.environ.get("DB_HOST", "127.0.0.1")
+DB_PORT = os.environ.get("DB_PORT", "5432")
+DB_NAME = os.environ.get("DB_NAME", "raitbyne_inventory")
+DB_USER = os.environ.get("DB_USER", "inventory_app")
+DB_PASSWORD = os.environ.get("DB_PASSWORD")
 
 
 def get_connection():
-    if not DATABASE_URL:
-        raise RuntimeError("DATABASE_URL is not configured.")
+    if not DB_PASSWORD:
+        raise RuntimeError("DB_PASSWORD is not configured.")
 
-    return psycopg.connect(DATABASE_URL, row_factory=dict_row)
+    return psycopg.connect(
+        host=DB_HOST,
+        port=DB_PORT,
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        row_factory=dict_row,
+    )
 
 
 @app.get("/")
