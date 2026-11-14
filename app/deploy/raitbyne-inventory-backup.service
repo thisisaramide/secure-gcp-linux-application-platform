@@ -1,0 +1,8 @@
+[Unit]
+Description=Back up the Raitbyne Inventory PostgreSQL database
+After=postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/raitbyne-inventory-backup
