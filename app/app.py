@@ -1,6 +1,19 @@
-from flask import Flask, jsonify
+import os
+
+import psycopg
+from psycopg.rows import dict_row
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+
+def get_connection():
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL is not configured.")
+
+    return psycopg.connect(DATABASE_URL, row_factory=dict_row)
 
 
 @app.get("/")
@@ -17,5 +30,48 @@ def health_check():
     return jsonify(status="ok"), 200
 
 
+@app.get("/api/items")
+def list_items():
+    with get_connection() as connection:
+        items = connection.execute(
+            """
+            SELECT id, name, quantity, created_at
+            FROM inventory_items
+            ORDER BY id
+            """
+        ).fetchall()
+
+    return jsonify(items)
+
+
+@app.post("/api/items")
+def create_item():
+    payload = request.get_json(silent=True)
+
+    if not isinstance(payload, dict):
+        return jsonify(error="A JSON request body is required."), 400
+
+    name = payload.get("name")
+    quantity = payload.get("quantity")
+
+    if not isinstance(name, str) or not name.strip():
+        return jsonify(error="name must be a non-empty string."), 400
+
+    if isinstance(quantity, bool) or not isinstance(quantity, int) or quantity < 0:
+        return jsonify(error="quantity must be a non-negative integer."), 400
+
+    with get_connection() as connection:
+        item = connection.execute(
+            """
+            INSERT INTO inventory_items (name, quantity)
+            VALUES (%s, %s)
+            RETURNING id, name, quantity, created_at
+            """,
+            (name.strip(), quantity),
+        ).fetchone()
+
+    return jsonify(item), 201
+
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="127.0.0.1", port=8080)
