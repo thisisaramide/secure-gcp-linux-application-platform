@@ -1,0 +1,17 @@
+[Unit]
+Description=Raitbyne Inventory API
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=secureway02
+Group=secureway02
+WorkingDirectory=/home/secureway02/secure-gcp-linux-application-platform/app
+EnvironmentFile=/etc/raitbyne-inventory.env
+ExecStart=/home/secureway02/secure-gcp-linux-application-platform/.venv/bin/gunicorn --workers 2 --bind 127.0.0.1:8080 app:app
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
