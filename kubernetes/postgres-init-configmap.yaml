@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: raitbyne-postgres-init
+  namespace: raitbyne
+  labels:
+    app.kubernetes.io/part-of: raitbyne-inventory
+data:
+  001-schema.sql: |
+    CREATE TABLE IF NOT EXISTS inventory_items (
+        id BIGSERIAL PRIMARY KEY,
+        name TEXT NOT NULL CHECK (char_length(trim(name)) > 0),
+        quantity INTEGER NOT NULL CHECK (quantity >= 0),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
