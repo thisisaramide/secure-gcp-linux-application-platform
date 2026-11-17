@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: raitbyne-inventory-config
+  namespace: raitbyne
+  labels:
+    app.kubernetes.io/part-of: raitbyne-inventory
+data:
+  DB_HOST: raitbyne-postgres
+  DB_PORT: "5432"
+  DB_NAME: raitbyne_inventory
+  DB_USER: inventory_app
