@@ -10,7 +10,24 @@ DB_HOST = os.environ.get("DB_HOST", "127.0.0.1")
 DB_PORT = os.environ.get("DB_PORT", "5432")
 DB_NAME = os.environ.get("DB_NAME", "raitbyne_inventory")
 DB_USER = os.environ.get("DB_USER", "inventory_app")
-DB_PASSWORD = os.environ.get("DB_PASSWORD")
+
+
+def get_secret_value(name):
+    secret_file = os.environ.get(f"{name}_FILE")
+
+    if secret_file:
+        try:
+            with open(secret_file, encoding="utf-8") as file:
+                return file.read().strip()
+        except OSError as error:
+            raise RuntimeError(
+                f"Unable to read the secret file configured by {name}_FILE."
+            ) from error
+
+    return os.environ.get(name)
+
+
+DB_PASSWORD = get_secret_value("DB_PASSWORD")
 
 
 def get_connection():
