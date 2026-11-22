@@ -36,6 +36,7 @@ spec:
         app.kubernetes.io/name: raitbyne-postgres
         app.kubernetes.io/part-of: raitbyne-inventory
     spec:
+      serviceAccountName: raitbyne-postgres
       containers:
         - name: postgresql
           image: postgres:16-alpine
@@ -47,29 +48,35 @@ spec:
               value: /var/lib/postgresql/data/pgdata
             - name: POSTGRES_DB
               valueFrom:
-                secretKeyRef:
-                  name: raitbyne-postgres-credentials
-                  key: POSTGRES_DB
+                configMapKeyRef:
+                  name: raitbyne-inventory-config
+                  key: DB_NAME
             - name: POSTGRES_USER
               valueFrom:
-                secretKeyRef:
-                  name: raitbyne-postgres-credentials
-                  key: POSTGRES_USER
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: raitbyne-postgres-credentials
-                  key: POSTGRES_PASSWORD
+                configMapKeyRef:
+                  name: raitbyne-inventory-config
+                  key: DB_USER
+            - name: POSTGRES_PASSWORD_FILE
+              value: /var/secrets/db-password
           volumeMounts:
             - name: database-data
               mountPath: /var/lib/postgresql/data
             - name: database-schema
               mountPath: /docker-entrypoint-initdb.d/001-schema.sql
               subPath: 001-schema.sql
+            - name: db-password
+              mountPath: /var/secrets
+              readOnly: true
       volumes:
         - name: database-schema
           configMap:
             name: raitbyne-postgres-init
+        - name: db-password
+          csi:
+            driver: secrets-store-gke.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: raitbyne-db-password-gke
   volumeClaimTemplates:
     - metadata:
         name: database-data

@@ -17,9 +17,10 @@ spec:
         app.kubernetes.io/name: raitbyne-inventory
         app.kubernetes.io/part-of: raitbyne-inventory
     spec:
+      serviceAccountName: raitbyne-inventory
       containers:
         - name: inventory-api
-          image: europe-west1-docker.pkg.dev/strong-surge-513519-q5/raitbyne-images/raitbyne-inventory:phase4.1
+          image: europe-west1-docker.pkg.dev/strong-surge-513519-q5/raitbyne-images/raitbyne-inventory:phase5.1
           imagePullPolicy: Always
           ports:
             - name: http
@@ -28,11 +29,12 @@ spec:
             - configMapRef:
                 name: raitbyne-inventory-config
           env:
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: raitbyne-postgres-credentials
-                  key: DB_PASSWORD
+            - name: DB_PASSWORD_FILE
+              value: /var/secrets/db-password
+          volumeMounts:
+            - name: db-password
+              mountPath: /var/secrets
+              readOnly: true
           readinessProbe:
             httpGet:
               path: /healthz
@@ -62,6 +64,13 @@ spec:
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
+      volumes:
+        - name: db-password
+          csi:
+            driver: secrets-store-gke.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: raitbyne-db-password-gke
 
 ---
 apiVersion: v1
