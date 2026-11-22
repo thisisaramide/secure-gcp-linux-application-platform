@@ -20,7 +20,7 @@ spec:
       serviceAccountName: raitbyne-inventory
       containers:
         - name: inventory-api
-          image: europe-west1-docker.pkg.dev/strong-surge-513519-q5/raitbyne-images/raitbyne-inventory:phase5
+          image: europe-west1-docker.pkg.dev/strong-surge-513519-q5/raitbyne-images/raitbyne-inventory:phase5.1
           imagePullPolicy: Always
           ports:
             - name: http
